@@ -8,7 +8,9 @@
     "dev": "tsx watch src/index.ts",
     "seed": "tsx scripts/seed_mock.ts",
     "test": "jest",
-    "studio": "prisma studio"
+    "studio": "prisma studio",
+    "build": "prisma generate",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
