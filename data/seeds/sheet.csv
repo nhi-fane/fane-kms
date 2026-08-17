@@ -1,0 +1,11 @@
+Log_ID,Staff_ID,Staff_Name,Staff_Role,Staff_Level,Staff_Cost_Per_Hour,Project_Code,Project_Name,Client_Code,Client_Name,Task_Name,Task_Start_Date,Task_Deadline,Log_Date,Hours_Logged,Log_Source,Approval_Status,Approved_By_ID,Approved_By_Name
+LOG-001,STF008,Nguyen Van A,Creative Team,1,50000,PRJ-CFV-001,Care For Vietnam Launch,CFV,CFVN,Design Banner Facebook,2026-06-15,2026-06-18,2026-06-16,4,Web,Approved,STF004,Creative Project Lead
+LOG-002,STF008,Nguyen Van A,Creative Team,1,50000,PRJ-CFV-001,Care For Vietnam Launch,CFV,CFVN,Design Banner Facebook,2026-06-15,2026-06-18,2026-06-17,4,Web,Approved,STF004,Creative Project Lead
+LOG-003,STF009,Tran Thi B,Creative Team,1,45000,PRJ-CFV-001,Care For Vietnam Launch,CFV,CFVN,Copywriting Launch Post,2026-06-15,2026-06-19,2026-06-16,3,Telegram,Approved,STF004,Creative Project Lead
+LOG-004,STF009,Tran Thi B,Creative Team,1,45000,PRJ-CFV-001,Care For Vietnam Launch,CFV,CFVN,Copywriting Launch Post,2026-06-15,2026-06-19,2026-06-17,4.5,Web,Approved,STF004,Creative Project Lead
+LOG-005,STF004,Creative Project Lead,Creative Project Lead,2,80000,PRJ-CFV-001,Care For Vietnam Launch,CFV,CFVN,Key Visual Direction,2026-06-12,2026-06-16,2026-06-15,6,Web,Approved,STF003,Creative Director
+LOG-006,STF004,Creative Project Lead,Creative Project Lead,2,80000,PRJ-ANK-001,Anker Prime Campaign,ANK,Anker,Creative Brief Review,2026-06-15,2026-06-16,2026-06-15,4,Web,Approved,STF003,Creative Director
+LOG-007,STF008,Nguyen Van A,Creative Team,1,50000,PRJ-ANK-001,Anker Prime Campaign,ANK,Anker,Storyboard Layout,2026-06-16,2026-06-20,2026-06-17,5,Web,Pending,STF004,Creative Project Lead
+LOG-008,STF009,Tran Thi B,Creative Team,1,45000,PRJ-ANK-001,Anker Prime Campaign,ANK,Anker,Slogan Concept,2026-06-16,2026-06-19,2026-06-17,4,Telegram,Pending,STF004,Creative Project Lead
+LOG-009,STF008,Nguyen Van A,Creative Team,1,50000,PRJ-CFV-001,Care For Vietnam Launch,CFV,CFVN,Revision Banner Facebook,2026-06-18,2026-06-20,2026-06-18,2,Web,Approved,STF004,Creative Project Lead
+LOG-010,STF004,Creative Project Lead,Creative Project Lead,2,80000,PRJ-CFV-001,Care For Vietnam Launch,CFV,CFVN,Project Sync Meeting,2026-06-15,2026-06-20,2026-06-18,2,Web,Approved,STF003,Creative Director

@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-dark: 222 47% 7%;
+    --bg-card: 217 33% 13%;
+    --text-main: 210 40% 98%;
+    --text-muted: 215 20% 65%;
+    
+    --accent-purple: 260 89% 65%;
+    --accent-blue: 200 90% 50%;
+    --accent-orange: 24 95% 55%;
+    --accent-red: 348 83% 47%;
+    --accent-green: 142 71% 45%;
+    
+    --border-radius: 16px;
+  }
+
+  body {
+    @apply bg-background-dark text-text-main antialiased m-0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+}
+
+@layer components {
+  /* True glassmorphism with backdrop-blur */
+  .glass-panel {
+    @apply bg-background-card/80 backdrop-blur-md border border-text-muted/15 rounded p-6 shadow-glass;
+  }
+
+  .metric-card-inner {
+    @apply bg-background-card/40 border-2 border-transparent p-5 rounded-xl flex flex-col gap-4 flex-1 min-w-[140px] relative overflow-hidden;
+  }
+
+  .overload-glow {
+    @apply shadow-overload border-accent-red;
+  }
+}
