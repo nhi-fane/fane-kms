@@ -105,13 +105,27 @@ const StaffRow = React.memo(({ staff, isAdded, isUpdated, onChange, onToggleActi
         placeholder="fane@example.com"
         className={`bg-transparent border ${!localData.email.trim() || hasError('email') ? 'border-red-500/50 bg-red-500/10' : 'border-transparent hover:border-white/20'} focus:border-accent-blue rounded px-2 py-1 text-white text-sm outline-none w-full`}
       />
-      <input 
+      <select
         value={localData.role}
         onChange={(e) => setLocalData(p => ({...p, role: e.target.value}))}
         onBlur={() => handleBlur('role')}
-        onKeyDown={(e) => handleKeyDown(e, 'role')}
-        className={`bg-transparent border ${!localData.role.trim() || hasError('role') ? 'border-red-500/50 bg-red-500/10' : 'border-transparent hover:border-white/20'} focus:border-accent-blue rounded px-2 py-1 text-white text-sm outline-none w-full`}
-      />
+        className={`bg-surface border ${!localData.role.trim() || hasError('role') ? 'border-red-500/50 bg-red-500/10' : 'border-transparent hover:border-white/20'} focus:border-accent-blue rounded px-2 py-1 text-text-muted text-sm outline-none w-full`}
+      >
+        <option value="" disabled>Select Role...</option>
+        <option value="CEO">CEO</option>
+        <option value="Account">Account</option>
+        <option value="Creative Director">Creative Director</option>
+        <option value="Creative Lead">Creative Lead</option>
+        <option value="Creative Team">Creative Team</option>
+        <option value="PO">Product Owner (PO)</option>
+        <option value="Kế toán">Kế toán</option>
+        <option value="BOD">BOD</option>
+        <option value="Senior Account Executive">Senior Account Executive</option>
+        <option value="Creative Project Lead">Creative Project Lead</option>
+        <option value="Staff">Staff</option>
+        <option value="Senior Strategic Planner">Senior Strategic Planner</option>
+        <option value="Manager">Manager</option>
+      </select>
       <select
         value={localData.team}
         onChange={(e) => setLocalData(p => ({...p, team: e.target.value}))}

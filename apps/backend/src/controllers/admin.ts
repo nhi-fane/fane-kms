@@ -300,6 +300,9 @@ export const bulkSaveStaff = async (req: Request, res: Response, next: NextFunct
     if (error.code === 'P2002') {
       return res.status(400).json({ error: "Lỗi trùng lặp dữ liệu (Mã Nhân viên hoặc Email đã tồn tại)." });
     }
+    if (error.code === 'P2003') {
+      return res.status(400).json({ error: "Chức danh (Role) không hợp lệ. Vui lòng chọn một chức danh có sẵn trong hệ thống." });
+    }
     console.error('[BulkSave Staff Error]', error);
     next(error);
   }
