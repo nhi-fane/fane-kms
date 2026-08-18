@@ -435,7 +435,7 @@ export const AdminProjectManagement: React.FC<Props> = ({ clients, projects, sta
       </div>
 
       <div className="flex-1 bg-surface/10 rounded-b-lg">
-        {flatList.map((item, index) => {
+        {flatList.map((item) => {
             if (item.type === 'header') {
               return (
                 <div
