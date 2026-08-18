@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "deploy:staging": "npm run lint && npm run build && npx wrangler deploy",
-    "deploy": "npm run lint && npm run build && npx wrangler pages deploy dist --project-name fane-traffic"
+    "deploy": "npm run lint && npm run build && npx wrangler pages deploy dist --project-name fane-traffic --branch production"
   },
   "dependencies": {
     "@radix-ui/react-popover": "^1.1.17",
