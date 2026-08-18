@@ -58,7 +58,8 @@ export const CEOPermissionPortal: React.FC<Props> = ({ token }) => {
 
   const fetchData = async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/permissions/matrix', {
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const res = await fetch(`${baseUrl}/api/permissions/matrix`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to fetch permission matrix');
@@ -97,7 +98,8 @@ export const CEOPermissionPortal: React.FC<Props> = ({ token }) => {
     }
 
     try {
-      const res = await fetch('http://localhost:3000/api/permissions/override', {
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const res = await fetch(`${baseUrl}/api/permissions/override`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
