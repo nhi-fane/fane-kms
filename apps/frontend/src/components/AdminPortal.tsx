@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import type { DashboardData, Client, Project, FieldError } from '../hooks/useDashboardData';
 
 import { AdminClientManagement } from './AdminClientManagement';
@@ -82,11 +82,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ token, data, currentUs
     }
   };
 
+  const isSavingRef = useRef(false);
+
   const handleSave = async (type: 'clients' | 'projects' | 'staff') => {
     const isValid = type === 'clients' ? isClientDataValid : type === 'projects' ? isProjectDataValid : isStaffDataValid;
     const hasChanges = type === 'clients' ? hasClientChanges : type === 'projects' ? hasProjectChanges : hasStaffChanges;
 
-    if (!hasChanges || !isValid || isSaving) return;
+    if (!hasChanges || !isValid || isSavingRef.current) return;
+    
+    isSavingRef.current = true;
     setIsSaving(true);
     setError(null);
     setFieldErrors([]);
@@ -142,6 +146,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ token, data, currentUs
     } catch (err: any) {
       setError(err.message);
     } finally {
+      isSavingRef.current = false;
       setIsSaving(false);
     }
   };
