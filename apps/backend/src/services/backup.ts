@@ -36,8 +36,21 @@ export const backupDatabase = async () => {
 };
 
 const getDriveClient = () => {
+  // 1. Production Mode: Use Base64 Environment Variable
+  if (process.env.GOOGLE_CREDENTIALS_BASE64) {
+    const credentialsJson = Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base64').toString('utf-8');
+    const credentials = JSON.parse(credentialsJson);
+
+    const auth = new google.auth.GoogleAuth({
+      credentials,
+      scopes: ['https://www.googleapis.com/auth/drive'],
+    });
+    return google.drive({ version: 'v3', auth });
+  }
+
+  // 2. Local Development Mode: Use physical file
   if (!fs.existsSync(credentialsPath)) {
-    throw new Error(`Credentials file not found at ${credentialsPath}`);
+    throw new Error(`Credentials not found. Please set GOOGLE_CREDENTIALS_BASE64 or provide ${credentialsPath}`);
   }
   const auth = new google.auth.GoogleAuth({
     keyFile: credentialsPath,
