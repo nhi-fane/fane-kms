@@ -13,9 +13,10 @@ interface StaffRowProps {
   onResetPassword: (staffId: string) => void;
   errors: FieldError[];
   isResetting: boolean;
+  roleOptions: string[];
 }
 
-const StaffRow = React.memo(({ staff, isAdded, isUpdated, onChange, onToggleActive, onResetPassword, errors, isResetting }: StaffRowProps) => {
+const StaffRow = React.memo(({ staff, isAdded, isUpdated, onChange, onToggleActive, onResetPassword, errors, isResetting, roleOptions }: StaffRowProps) => {
   const [localData, setLocalData] = useState({
     staffId: staff.staffId,
     fullName: staff.fullName,
@@ -25,6 +26,8 @@ const StaffRow = React.memo(({ staff, isAdded, isUpdated, onChange, onToggleActi
     level: staff.level || 1,
     standardHoursPerDay: staff.standardHoursPerDay || 8
   });
+  
+  const [isCreatingRole, setIsCreatingRole] = useState(false);
 
   useEffect(() => {
     setLocalData({
@@ -69,10 +72,30 @@ const StaffRow = React.memo(({ staff, isAdded, isUpdated, onChange, onToggleActi
   const handleKeyDown = (e: React.KeyboardEvent, field: keyof typeof localData) => {
     if (e.key === 'Escape') {
       setLocalData(prev => ({ ...prev, [field]: staff[field as keyof Staff] || '' }));
+      if (field === 'role') setIsCreatingRole(false);
       (e.target as HTMLInputElement).blur();
     }
     if (e.key === 'Enter') {
       (e.target as HTMLInputElement).blur();
+    }
+  };
+
+  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
+    const val = e.target.value;
+    if (val === '__CREATE_NEW__') {
+      setIsCreatingRole(true);
+      setLocalData(p => ({...p, role: ''}));
+    } else {
+      setLocalData(p => ({...p, role: val}));
+    }
+  };
+
+  const handleRoleBlur = () => {
+    if (isCreatingRole && !localData.role.trim()) {
+      setIsCreatingRole(false);
+      setLocalData(p => ({...p, role: staff.role || ''}));
+    } else {
+      handleBlur('role');
     }
   };
 
@@ -105,27 +128,30 @@ const StaffRow = React.memo(({ staff, isAdded, isUpdated, onChange, onToggleActi
         placeholder="fane@example.com"
         className={`bg-transparent border ${!localData.email.trim() || hasError('email') ? 'border-red-500/50 bg-red-500/10' : 'border-transparent hover:border-white/20'} focus:border-accent-blue rounded px-2 py-1 text-white text-sm outline-none w-full`}
       />
-      <select
-        value={localData.role}
-        onChange={(e) => setLocalData(p => ({...p, role: e.target.value}))}
-        onBlur={() => handleBlur('role')}
-        className={`bg-surface border ${!localData.role.trim() || hasError('role') ? 'border-red-500/50 bg-red-500/10' : 'border-transparent hover:border-white/20'} focus:border-accent-blue rounded px-2 py-1 text-text-muted text-sm outline-none w-full`}
-      >
-        <option value="" disabled>Select Role...</option>
-        <option value="CEO">CEO</option>
-        <option value="Account">Account</option>
-        <option value="Creative Director">Creative Director</option>
-        <option value="Creative Lead">Creative Lead</option>
-        <option value="Creative Team">Creative Team</option>
-        <option value="PO">Product Owner (PO)</option>
-        <option value="Kế toán">Kế toán</option>
-        <option value="BOD">BOD</option>
-        <option value="Senior Account Executive">Senior Account Executive</option>
-        <option value="Creative Project Lead">Creative Project Lead</option>
-        <option value="Staff">Staff</option>
-        <option value="Senior Strategic Planner">Senior Strategic Planner</option>
-        <option value="Manager">Manager</option>
-      </select>
+      {isCreatingRole ? (
+        <input 
+          value={localData.role}
+          onChange={handleRoleChange}
+          onBlur={handleRoleBlur}
+          onKeyDown={(e) => handleKeyDown(e, 'role')}
+          autoFocus
+          placeholder="New role name..."
+          className={`bg-transparent border ${!localData.role.trim() || hasError('role') ? 'border-red-500/50 bg-red-500/10' : 'border-accent-blue'} focus:border-accent-blue rounded px-2 py-1 text-white text-sm outline-none w-full`}
+        />
+      ) : (
+        <select
+          value={localData.role}
+          onChange={handleRoleChange}
+          onBlur={handleRoleBlur}
+          className={`bg-surface border ${!localData.role.trim() || hasError('role') ? 'border-red-500/50 bg-red-500/10' : 'border-transparent hover:border-white/20'} focus:border-accent-blue rounded px-2 py-1 text-text-muted text-sm outline-none w-full`}
+        >
+          <option value="" disabled>Select Role...</option>
+          {roleOptions.map(r => (
+            <option key={r} value={r}>{r}</option>
+          ))}
+          <option value="__CREATE_NEW__" className="text-accent-blue font-bold">+ Create new role...</option>
+        </select>
+      )}
       <select
         value={localData.team}
         onChange={(e) => setLocalData(p => ({...p, team: e.target.value}))}
@@ -204,11 +230,21 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
+const BASE_ROLES = ["CEO", "Account", "Creative Director", "Creative Lead", "Creative Team", "PO", "Kế toán", "BOD", "Senior Account Executive", "Creative Project Lead", "Staff", "Senior Strategic Planner", "Manager"];
+
 export const AdminStaffManagement: React.FC<Props> = ({ staff, token, draftData, setDraftData, fieldErrors = [], onSave, onRevert, hasChanges, isValid, isSaving }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [resettingId, setResettingId] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  const roleOptions = useMemo(() => {
+    const roles = new Set(BASE_ROLES);
+    staff.forEach(s => s.role && roles.add(s.role));
+    draftData.staff.added.forEach(s => s.role && roles.add(s.role));
+    draftData.staff.updated.forEach(s => s.role && roles.add(s.role));
+    return Array.from(roles);
+  }, [staff, draftData.staff]);
 
   const handleAddStaff = () => {
     const hasEmptyNewRow = draftData.staff.added.some(
@@ -428,6 +464,7 @@ export const AdminStaffManagement: React.FC<Props> = ({ staff, token, draftData,
                 onResetPassword={handleResetPassword}
                 errors={fieldErrors.filter(e => e.uiKey === (staffItem as any)._uiKey || e.uiKey === staffItem.staffId)}
                 isResetting={resettingId === staffItem.staffId}
+                roleOptions={roleOptions}
               />
             );
         })}

@@ -251,6 +251,23 @@ export const bulkSaveStaff = async (req: Request, res: Response, next: NextFunct
     const { added = [], updated = [] } = staff;
 
     await prisma.$transaction(async (tx) => {
+      // 0. Ensure roles exist
+      const incomingRoles = new Set<string>();
+      for (const s of added) if (s.role) incomingRoles.add(s.role.trim());
+      for (const s of updated) if (s.role) incomingRoles.add(s.role.trim());
+      
+      for (const roleCode of incomingRoles) {
+        const existingRole = await tx.role.findUnique({ where: { code: roleCode } });
+        if (!existingRole) {
+          await tx.role.create({
+            data: {
+              code: roleCode,
+              name: roleCode
+            }
+          });
+        }
+      }
+
       // 1. Add Staff
       for (const s of added) {
         const hashedDefault = await bcrypt.hash('FanE@2026', 10);
