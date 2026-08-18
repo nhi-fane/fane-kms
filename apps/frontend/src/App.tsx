@@ -63,9 +63,18 @@ function App() {
     setToken(null);
   };
 
+  const isOldDomain = window.location.hostname.includes('workers.dev');
+
+  const migrationBanner = isOldDomain ? (
+    <div className="bg-orange-500/20 border-b border-orange-500/50 p-3 text-center text-orange-200">
+      <span className="font-semibold">Lưu ý:</span> Hệ thống đã chuyển sang tên miền mới. Vui lòng truy cập <a href="https://fane-traffic.pages.dev" className="font-bold underline hover:text-white">fane-traffic.pages.dev</a> để trải nghiệm đầy đủ tính năng và không bị gián đoạn.
+    </div>
+  ) : null;
+
   if (!token) {
     return (
       <ErrorBoundary>
+        {migrationBanner}
         <Login onLoginSuccess={handleLoginSuccess} />
       </ErrorBoundary>
     );
@@ -102,6 +111,7 @@ function App() {
           onExit={handleLogout}
         />
       )}
+      {migrationBanner}
       <div className="min-h-screen bg-background-dark p-4 md:p-6 lg:p-8">
         <div className="max-w-[1600px] mx-auto flex flex-col gap-6">
 

@@ -236,6 +236,7 @@ export const AdminProjectManagement: React.FC<Props> = ({ clients, projects, sta
       startDate: new Date().toISOString(),
       endDate: null,
       status: 'Not Started',
+      // eslint-disable-next-line
       _uiKey: `NEW-PROJ-${Date.now()}`
     };
     
