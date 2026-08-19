@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../config/prisma';
+import { decrypt } from '../utils/crypto';
 
 export const getDashboardData = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -7,20 +8,32 @@ export const getDashboardData = async (req: Request, res: Response, next: NextFu
     const isBOD = ['BOD', 'CEO'].includes(userRole);
     const isAccountant = userRole === 'Kế toán';
 
-    // Fetch staff but exclude password
+    // Fetch staff but exclude password, include salary
     const staff = await prisma.staff.findMany({
       select: {
         staffId: true, fullName: true, firstName: true, role: true, level: true,
-        costPerHour: true, standardHoursPerDay: true, telegramId: true,
-        email: true, isActive: true, team: true, createdAt: true, updatedAt: true
+        standardHoursPerDay: true, telegramId: true,
+        email: true, isActive: true, team: true, createdAt: true, updatedAt: true,
+        salary: true
       }
     });
 
     // Mask costPerHour for non-BOD
-    const maskedStaff = staff.map(s => ({
-      ...s,
-      costPerHour: isBOD ? s.costPerHour : 0
-    }));
+    const maskedStaff = staff.map(s => {
+      let cost = 0;
+      if (isBOD && s.salary?.encryptedCostPerHour) {
+        try {
+          cost = parseFloat(decrypt(s.salary.encryptedCostPerHour));
+        } catch (e) {
+          cost = 0;
+        }
+      }
+      const { salary, ...rest } = s;
+      return {
+        ...rest,
+        costPerHour: cost
+      };
+    });
 
     const projects = await prisma.project.findMany({ include: { creativeLead: true } });
     const tasks = await prisma.task.findMany({ include: { assignees: true } });
