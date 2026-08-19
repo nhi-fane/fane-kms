@@ -20,7 +20,7 @@ async function main() {
 
   // 1.5 Create Roles
   console.log('Creating Roles...');
-  const roles = ['Account', 'Creative Director', 'Creative Project Lead', 'Staff', 'Kế toán', 'Manager'];
+  const roles = ['CEO', 'Account', 'Creative Director', 'Creative Project Lead', 'Staff', 'Kế toán', 'Manager'];
   for (const roleCode of roles) {
     await prisma.role.upsert({
       where: { code: roleCode },
@@ -32,6 +32,7 @@ async function main() {
   // 2. Create Staff (9 roles as requested)
   console.log('Creating Staff...');
   const staffData = [
+    { staffId: 'CEO_01', fullName: 'Founder CEO', firstName: 'Founder', role: 'CEO', costPerHour: 1000000, level: 1, standardHoursPerDay: 8, email: 'ceo@fane.com' },
     { staffId: 'ACC_01', fullName: 'Nguyen Account', firstName: 'Nguyen', role: 'Account', costPerHour: 100000, level: 6, standardHoursPerDay: 8, email: 'acc01@fane.com' },
     { staffId: 'CD_01', fullName: 'Tran Creative Director', firstName: 'Tran', role: 'Creative Director', costPerHour: 500000, level: 2, standardHoursPerDay: 8, email: 'cd01@fane.com' },
     { staffId: 'CPL_A', fullName: 'Le Project Lead A', firstName: 'Le', role: 'Creative Project Lead', costPerHour: 300000, level: 3, standardHoursPerDay: 8, email: 'cpla@fane.com' },
