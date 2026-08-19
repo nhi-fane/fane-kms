@@ -219,7 +219,7 @@ function App() {
                           >
                             My Portal
                           </button>
-                          {(currentUser.team?.toLowerCase() === 'ceo' || currentUser.team?.toLowerCase() === 'account' || currentUser.team?.toLowerCase() === 'bod') && (
+                          {(currentUser.role?.toLowerCase() === 'ceo' || currentUser.role?.toLowerCase() === 'account' || currentUser.role?.toLowerCase() === 'bod') && (
                             <button
                               onClick={() => {
                                 setCurrentView('admin');
