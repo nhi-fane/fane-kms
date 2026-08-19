@@ -32,15 +32,15 @@ async function main() {
   // 2. Create Staff (9 roles as requested)
   console.log('Creating Staff...');
   const staffData = [
-    { staffId: 'ACC_01', fullName: 'Nguyen Account', firstName: 'Nguyen', role: 'Account', costPerHour: 100000, level: 6, standardHoursPerDay: 8 },
-    { staffId: 'CD_01', fullName: 'Tran Creative Director', firstName: 'Tran', role: 'Creative Director', costPerHour: 500000, level: 2, standardHoursPerDay: 8 },
-    { staffId: 'CPL_A', fullName: 'Le Project Lead A', firstName: 'Le', role: 'Creative Project Lead', costPerHour: 300000, level: 3, standardHoursPerDay: 8 },
-    { staffId: 'DES_A1', fullName: 'Pham Designer A1', firstName: 'Pham', role: 'Staff', costPerHour: 150000, level: 5, standardHoursPerDay: 8 },
-    { staffId: 'CW_A1', fullName: 'Vu Copywriter A1', firstName: 'Vu', role: 'Staff', costPerHour: 150000, level: 5, standardHoursPerDay: 8 },
-    { staffId: 'CPL_B', fullName: 'Hoang Project Lead B', firstName: 'Hoang', role: 'Creative Project Lead', costPerHour: 300000, level: 3, standardHoursPerDay: 8 },
-    { staffId: 'DES_B1', fullName: 'Ngo Designer B1', firstName: 'Ngo', role: 'Staff', costPerHour: 150000, level: 5, standardHoursPerDay: 8 },
-    { staffId: 'DES_B2', fullName: 'Bui Designer B2', firstName: 'Bui', role: 'Staff', costPerHour: 150000, level: 5, standardHoursPerDay: 8 },
-    { staffId: 'KT_01', fullName: 'Dinh Ke Toan', firstName: 'Dinh', role: 'Kế toán', costPerHour: 120000, level: 6, standardHoursPerDay: 8 },
+    { staffId: 'ACC_01', fullName: 'Nguyen Account', firstName: 'Nguyen', role: 'Account', costPerHour: 100000, level: 6, standardHoursPerDay: 8, email: 'acc01@fane.com' },
+    { staffId: 'CD_01', fullName: 'Tran Creative Director', firstName: 'Tran', role: 'Creative Director', costPerHour: 500000, level: 2, standardHoursPerDay: 8, email: 'cd01@fane.com' },
+    { staffId: 'CPL_A', fullName: 'Le Project Lead A', firstName: 'Le', role: 'Creative Project Lead', costPerHour: 300000, level: 3, standardHoursPerDay: 8, email: 'cpla@fane.com' },
+    { staffId: 'DES_A1', fullName: 'Pham Designer A1', firstName: 'Pham', role: 'Staff', costPerHour: 150000, level: 5, standardHoursPerDay: 8, email: 'desa1@fane.com' },
+    { staffId: 'CW_A1', fullName: 'Vu Copywriter A1', firstName: 'Vu', role: 'Staff', costPerHour: 150000, level: 5, standardHoursPerDay: 8, email: 'cwa1@fane.com' },
+    { staffId: 'CPL_B', fullName: 'Hoang Project Lead B', firstName: 'Hoang', role: 'Creative Project Lead', costPerHour: 300000, level: 3, standardHoursPerDay: 8, email: 'cplb@fane.com' },
+    { staffId: 'DES_B1', fullName: 'Ngo Designer B1', firstName: 'Ngo', role: 'Staff', costPerHour: 150000, level: 5, standardHoursPerDay: 8, email: 'desb1@fane.com' },
+    { staffId: 'DES_B2', fullName: 'Bui Designer B2', firstName: 'Bui', role: 'Staff', costPerHour: 150000, level: 5, standardHoursPerDay: 8, email: 'desb2@fane.com' },
+    { staffId: 'KT_01', fullName: 'Dinh Ke Toan', firstName: 'Dinh', role: 'Kế toán', costPerHour: 120000, level: 6, standardHoursPerDay: 8, email: 'kt01@fane.com' },
   ];
 
   for (const s of staffData) {
