@@ -24,7 +24,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const isMatch = password === staff.password || await bcrypt.compare(password, staff.password);
+    const isMatch = await bcrypt.compare(password, staff.password);
     if (!isMatch) {
       res.status(401).json({ error: 'Mật khẩu không chính xác' });
       return;
