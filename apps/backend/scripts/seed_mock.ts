@@ -18,6 +18,17 @@ async function main() {
   await prisma.staffSalary.deleteMany();
   await prisma.staff.deleteMany();
 
+  // 1.5 Create Roles
+  console.log('Creating Roles...');
+  const roles = ['Account', 'Creative Director', 'Creative Project Lead', 'Staff', 'Kế toán', 'Manager'];
+  for (const roleCode of roles) {
+    await prisma.role.upsert({
+      where: { code: roleCode },
+      update: {},
+      create: { code: roleCode, name: roleCode }
+    });
+  }
+
   // 2. Create Staff (9 roles as requested)
   console.log('Creating Staff...');
   const staffData = [
