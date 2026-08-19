@@ -2,3 +2,13 @@ node_modules/
 .env
 apps/backend/.env
 apps/backend/google-credentials.json
+
+# Build artifacts
+dist/
+build/
+apps/frontend/dist/
+apps/backend/tsconfig.tsbuildinfo
+apps/backend/src/**/*.js
+apps/backend/scratch_*
+apps/backend/*.db
+apps/backend/*.db-journal
