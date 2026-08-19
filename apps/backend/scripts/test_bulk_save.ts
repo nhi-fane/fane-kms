@@ -15,9 +15,16 @@ async function runTests() {
       fullName: 'QA Tester',
       firstName: 'QA',
       role: 'Manager',
-      costPerHour: 50,
       email: 'qa@fanekms.com',
       password: 'xxx',
+    }
+  });
+  await prisma.staffSalary.upsert({
+    where: { staffId: creativeLeadId },
+    update: {},
+    create: {
+      staffId: creativeLeadId,
+      encryptedCostPerHour: 'mock_encrypted_value'
     }
   });
 
@@ -46,8 +53,8 @@ async function runTests() {
     return { req, res, next, getResult: () => ({ status: res.statusCode, body: res.jsonBody, nextCalled, nextError }) };
   };
 
-  // CLEANUP function
   const cleanup = async () => {
+    await prisma.internalCostTransaction.deleteMany({ where: { projectCode: { startsWith: 'QA_PROJ_' } } });
     await prisma.pnlTransaction.deleteMany({ where: { projectCode: { startsWith: 'QA_PROJ_' } } });
     await prisma.timesheet.deleteMany({ where: { task: { projectCode: { startsWith: 'QA_PROJ_' } } } });
     await prisma.taskAssignee.deleteMany({ where: { task: { projectCode: { startsWith: 'QA_PROJ_' } } } });

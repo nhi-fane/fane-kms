@@ -1,11 +1,12 @@
 import { prisma } from '../config/prisma';
+import { encrypt, decrypt } from '../utils/crypto';
 
 export const ledgerService = {
   async approveTimesheet(logId: string, approverId: string, impersonatorRole?: string) {
     return prisma.$transaction(async (tx) => {
       const ts = await tx.timesheet.findUnique({
         where: { logId },
-        include: { staff: true, task: { include: { project: true } } }
+        include: { task: { include: { project: true } } }
       });
       if (!ts) throw new Error('Timesheet not found');
       if (ts.approvalStatus === 'Approved') throw new Error('Timesheet is already approved');
@@ -15,8 +16,14 @@ export const ledgerService = {
         throw new Error('Project Lead cannot approve their own timesheet. Requires Creative Director.');
       }
 
-      // Snapshot cost
-      const cost = ts.staff.costPerHour;
+      // Snapshot cost securely
+      const salaryRecord = await tx.staffSalary.findUnique({
+        where: { staffId: ts.staffId }
+      });
+      
+      const cost = salaryRecord && salaryRecord.encryptedCostPerHour 
+        ? parseFloat(decrypt(salaryRecord.encryptedCostPerHour)) 
+        : 0;
       
       const logSource = impersonatorRole 
         ? `${ts.logSource} (Impersonated by ${impersonatorRole})`
@@ -28,26 +35,28 @@ export const ledgerService = {
         data: {
           approvalStatus: 'Approved',
           approvedById: approverId,
-          historicalCostPerHour: cost,
           logSource
         }
       });
 
-      // Insert PnlTransaction for internal cost
+      // Insert secure InternalCostTransaction
       if (ts.hoursLogged > 0) {
-        await tx.pnlTransaction.upsert({
+        const amount = ts.hoursLogged * cost;
+        const encryptedRate = encrypt(cost.toString());
+        const encryptedAmount = encrypt(amount.toString());
+
+        await tx.internalCostTransaction.upsert({
           where: { timesheetId: logId },
           create: {
             projectCode: ts.task.projectCode,
-            category: 'Internal_Cost',
-            staffId: ts.staffId,
             timesheetId: logId,
-            amount: ts.hoursLogged * cost,
-            transactionDate: ts.logDate,
-            loggedBy: 'System'
+            encryptedHistoricalRate: encryptedRate,
+            encryptedAmount: encryptedAmount,
+            transactionDate: ts.logDate
           },
           update: {
-            amount: ts.hoursLogged * cost,
+            encryptedHistoricalRate: encryptedRate,
+            encryptedAmount: encryptedAmount
           }
         });
       }
@@ -74,13 +83,12 @@ export const ledgerService = {
         where: { logId },
         data: {
           approvalStatus: 'Pending',
-          approvedById: null,
-          historicalCostPerHour: null
+          approvedById: null
         }
       });
 
-      // Delete the associated PnlTransaction to ensure P&L accuracy
-      await tx.pnlTransaction.deleteMany({
+      // Delete the associated secure transaction to ensure P&L accuracy
+      await tx.internalCostTransaction.deleteMany({
         where: { timesheetId: logId }
       });
 
@@ -88,3 +96,4 @@ export const ledgerService = {
     });
   }
 };
+

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../config/prisma';
 import bcrypt from 'bcryptjs';
 import { AuditService } from '../services/auditService';
+import { encrypt } from '../utils/crypto';
 
 // Utility to parse Date consistently to UTC midnight if it's a YYYY-MM-DD string
 const parseDateUTC = (dateStr: string | null | undefined): Date | null => {
@@ -47,10 +48,15 @@ export const bulkSave = async (req: Request, res: Response, next: NextFunction) 
         where: { projectCode: { in: deletedProjectCodes } },
         select: { projectCode: true }
       });
+      const blockingInternalCosts = await prisma.internalCostTransaction.findMany({
+        where: { projectCode: { in: deletedProjectCodes } },
+        select: { projectCode: true }
+      });
 
       const invalidCodes = new Set([
         ...blockingTimesheets.map(t => t.task.projectCode),
-        ...blockingPnls.map(p => p.projectCode)
+        ...blockingPnls.map(p => p.projectCode),
+        ...blockingInternalCosts.map(p => p.projectCode)
       ]);
 
       if (invalidCodes.size > 0) {
@@ -279,12 +285,19 @@ export const bulkSaveStaff = async (req: Request, res: Response, next: NextFunct
             role: s.role,
             team: s.team || 'Creative',
             level: s.level || 1,
-            costPerHour: s.costPerHour || 0, // Frontend won't send this, but DB requires it.
             standardHoursPerDay: s.standardHoursPerDay || 8,
             email: s.email || '',
             password: hashedDefault,
             requirePasswordChange: true,
             isActive: s.isActive ?? true
+          }
+        });
+
+        // Initialize StaffSalary
+        await tx.staffSalary.create({
+          data: {
+            staffId: s.staffId,
+            encryptedCostPerHour: encrypt((s.costPerHour || 0).toString())
           }
         });
       }

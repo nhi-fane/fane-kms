@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { encrypt } from '../src/utils/crypto';
 
 const prisma = new PrismaClient();
 
@@ -24,8 +25,10 @@ async function main() {
     return;
   }
 
+  const costPerHour = 300000;
+
   // Create timesheet for June 21, 2026
-  await prisma.timesheet.create({
+  const ts1 = await prisma.timesheet.create({
     data: {
       staffId: staffId,
       taskId: taskAssignee.taskId,
@@ -33,13 +36,22 @@ async function main() {
       logDate: new Date('2026-06-21T00:00:00.000Z'),
       logSource: 'Web',
       approvalStatus: 'Approved',
-      approvedById: 'CD_01',
-      historicalCostPerHour: 300000
+      approvedById: 'CD_01'
+    }
+  });
+
+  await prisma.internalCostTransaction.create({
+    data: {
+      projectCode: projectCode,
+      timesheetId: ts1.logId,
+      encryptedHistoricalRate: encrypt(costPerHour.toString()),
+      encryptedAmount: encrypt((5 * costPerHour).toString()),
+      transactionDate: new Date('2026-06-21T00:00:00.000Z')
     }
   });
 
   // Create timesheet for June 22, 2026
-  await prisma.timesheet.create({
+  const ts2 = await prisma.timesheet.create({
     data: {
       staffId: staffId,
       taskId: taskAssignee.taskId,
@@ -47,8 +59,17 @@ async function main() {
       logDate: new Date('2026-06-22T00:00:00.000Z'),
       logSource: 'Web',
       approvalStatus: 'Approved',
-      approvedById: 'CD_01',
-      historicalCostPerHour: 300000
+      approvedById: 'CD_01'
+    }
+  });
+
+  await prisma.internalCostTransaction.create({
+    data: {
+      projectCode: projectCode,
+      timesheetId: ts2.logId,
+      encryptedHistoricalRate: encrypt(costPerHour.toString()),
+      encryptedAmount: encrypt((5 * costPerHour).toString()),
+      transactionDate: new Date('2026-06-22T00:00:00.000Z')
     }
   });
 

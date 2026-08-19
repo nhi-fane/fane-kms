@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { encrypt } from '../src/utils/crypto';
 
 const prisma = new PrismaClient({});
 
@@ -6,6 +7,7 @@ async function main() {
   console.log('🌱 Starting database seeding with comprehensive cases...');
 
   // 1. Clean up existing data
+  await prisma.internalCostTransaction.deleteMany();
   await prisma.pnlTransaction.deleteMany();
   await prisma.timesheet.deleteMany();
   await prisma.taskAssignee.deleteMany();
@@ -13,6 +15,7 @@ async function main() {
   await prisma.staffLeaveLog.deleteMany();
   await prisma.project.deleteMany();
   await prisma.client.deleteMany();
+  await prisma.staffSalary.deleteMany();
   await prisma.staff.deleteMany();
 
   // 2. Create Staff (9 roles as requested)
@@ -30,7 +33,14 @@ async function main() {
   ];
 
   for (const s of staffData) {
-    await prisma.staff.create({ data: s });
+    const { costPerHour, ...staffFields } = s;
+    await prisma.staff.create({ data: staffFields });
+    await prisma.staffSalary.create({
+      data: {
+        staffId: s.staffId,
+        encryptedCostPerHour: encrypt(costPerHour.toString())
+      }
+    });
   }
 
   // 3. Create Clients
@@ -249,7 +259,7 @@ async function main() {
         const logDate = new Date(d);
         const approvalStatus = (logDate.getTime() < today.getTime() - 86400000) ? 'Approved' : 'Pending';
         
-        await prisma.timesheet.create({
+        const log = await prisma.timesheet.create({
           data: {
             staffId,
             taskId: task.taskId,
@@ -257,21 +267,20 @@ async function main() {
             logDate: logDate,
             logSource: d.getDate() % 2 === 0 ? 'Web' : 'Telegram',
             approvalStatus,
-            approvedById: approvalStatus === 'Approved' ? 'CPL_A' : null,
-            historicalCostPerHour: approvalStatus === 'Approved' ? 150000 : null
+            approvedById: approvalStatus === 'Approved' ? 'CPL_A' : null
           }
         });
 
         if (approvalStatus === 'Approved' && hours > 0) {
-          await prisma.pnlTransaction.create({
+          const costPerHour = 150000;
+          const amount = hours * costPerHour;
+          await prisma.internalCostTransaction.create({
             data: {
               projectCode: task.projectCode,
-              category: 'Internal_Cost',
-              staffId: staffId,
-              amount: hours * 150000,
-              transactionDate: logDate,
-              loggedBy: 'System',
-              referenceId: 'mock_log_' + (logIdCounter++)
+              timesheetId: log.logId,
+              encryptedHistoricalRate: encrypt(costPerHour.toString()),
+              encryptedAmount: encrypt(amount.toString()),
+              transactionDate: logDate
             }
           });
         }
@@ -312,7 +321,7 @@ async function main() {
       logD.setDate(today.getDate() - d);
       if (logD.getDay() === 0 || logD.getDay() === 6) continue;
       
-      await prisma.timesheet.create({
+      const log = await prisma.timesheet.create({
         data: {
           staffId: 'CPL_B',
           taskId: task.taskId,
@@ -320,8 +329,19 @@ async function main() {
           logDate: logD,
           logSource: 'Web',
           approvalStatus: 'Approved',
-          approvedById: 'CD_01',
-          historicalCostPerHour: 300000
+          approvedById: 'CD_01'
+        }
+      });
+      
+      const costPerHour = 300000;
+      const amount = (data.hours / 4) * costPerHour;
+      await prisma.internalCostTransaction.create({
+        data: {
+          projectCode: task.projectCode,
+          timesheetId: log.logId,
+          encryptedHistoricalRate: encrypt(costPerHour.toString()),
+          encryptedAmount: encrypt(amount.toString()),
+          transactionDate: logD
         }
       });
     }

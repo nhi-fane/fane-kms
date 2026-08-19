@@ -28,7 +28,6 @@ model Staff {
   role                String
   roleData            Role?   @relation("PrimaryRole", fields: [role], references: [code])
   level               Int     @default(1)
-  costPerHour         Float
   standardHoursPerDay Float   @default(8)
   telegramId          String? @unique
   email               String  @unique @default("")
@@ -38,13 +37,13 @@ model Staff {
   tokenVersion        Int     @default(1)
   team                String  @default("Creative")
   isActive            Boolean @default(true)
+  salary              StaffSalary?
 
   projectsLed      Project[]            @relation("CreativeLead")
   tasksAssigned    TaskAssignee[]
   leaves           StaffLeaveLog[]
   timesheetsLogged Timesheet[]          @relation("TimesheetOwner")
   timesheetsApprvd Timesheet[]          @relation("TimesheetApprover")
-  pnlTransactions  PnlTransaction[]
   leaveApprovals   StaffLeaveLog[]      @relation("LeaveApprover")
   permissions      StaffPermission[]
   auditLogs        AuditLog[]           @relation("AuditPerformedBy")
@@ -70,6 +69,7 @@ model Project {
 
   tasks           Task[]
   pnlTransactions PnlTransaction[]
+  internalCosts   InternalCostTransaction[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -149,9 +149,8 @@ model Timesheet {
   approvalStatus String
   approvedById   String?
   approvedBy     Staff?  @relation("TimesheetApprover", fields: [approvedById], references: [staffId])
-
-  historicalCostPerHour Float?
-  pnlTransaction        PnlTransaction?
+  
+  internalCostTransaction InternalCostTransaction?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -178,11 +177,6 @@ model PnlTransaction {
   vendorCode String?
   vendor     Vendor? @relation(fields: [vendorCode], references: [vendorCode])
 
-  staffId     String?
-  staff       Staff?     @relation(fields: [staffId], references: [staffId])
-  timesheetId String?    @unique
-  timesheet   Timesheet? @relation(fields: [timesheetId], references: [logId], onDelete: Cascade)
-
   amount          Float
   transactionDate DateTime
   loggedBy        String
@@ -199,6 +193,32 @@ model CompanyHoliday {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ----------------------------------------
+// HIGHLY RESTRICTED HR & PAYROLL MODELS
+// ----------------------------------------
+
+model StaffSalary {
+  staffId              String @id
+  staff                Staff  @relation(fields: [staffId], references: [staffId], onDelete: Cascade)
+  encryptedCostPerHour String 
+  updatedAt            DateTime @updatedAt
+}
+
+model InternalCostTransaction {
+  transactionId           String @id @default(uuid())
+  projectCode             String
+  project                 Project @relation(fields: [projectCode], references: [projectCode], onDelete: Cascade)
+  
+  timesheetId             String @unique
+  timesheet               Timesheet @relation(fields: [timesheetId], references: [logId], onDelete: Cascade)
+  
+  encryptedHistoricalRate String 
+  encryptedAmount         String 
+  
+  transactionDate         DateTime
+  createdAt               DateTime @default(now())
 }
 
 // ----------------------------------------
