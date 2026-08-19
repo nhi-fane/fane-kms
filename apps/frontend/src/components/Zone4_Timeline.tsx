@@ -195,7 +195,7 @@ export const Zone4Timeline: React.FC<Props> = ({ tasks, projects, staff, timeshe
   const [selectedHalfYear, setSelectedHalfYear] = useState<string>('Today');
 
   const { dates, totalDays, months, staffRows, todayCol } = useMemo(() => {
-    if (tasks.length === 0 || !selectedHalfYear) return { dates: [], totalDays: 0, months: [], staffRows: [], todayCol: -1 };
+    if (!selectedHalfYear) return { dates: [], totalDays: 0, months: [], staffRows: [], todayCol: -1 };
 
     let startD: Date;
     let endD: Date;
@@ -435,8 +435,6 @@ export const Zone4Timeline: React.FC<Props> = ({ tasks, projects, staff, timeshe
       }, 50);
     }
   }, [selectedHalfYear]);
-
-  if (totalDays === 0) return <div>No tasks to display</div>;
 
   return (
     <div className="glass-panel flex flex-col gap-5 relative overflow-hidden">
