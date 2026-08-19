@@ -48,7 +48,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     });
   } catch (error: any) {
     console.error('[Login Error]', error);
-    res.status(500).json({ error: 'Lỗi server', details: error?.message || String(error) });
+    res.status(500).json({ error: 'Lỗi server' });
   }
 };
 
