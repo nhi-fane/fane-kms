@@ -45,11 +45,14 @@ async function main() {
 
   for (const s of staffData) {
     const { costPerHour, ...staffFields } = s;
-    await prisma.staff.create({ data: staffFields });
-    await prisma.staffSalary.create({
+    await prisma.staff.create({
       data: {
-        staffId: s.staffId,
-        encryptedCostPerHour: encrypt(costPerHour.toString())
+        ...staffFields,
+        salary: {
+          create: {
+            encryptedCostPerHour: encrypt(costPerHour.toString())
+          }
+        }
       }
     });
   }
@@ -118,16 +121,6 @@ async function main() {
     if (end > pEnd) end.setTime(pEnd.getTime());
     if (isOverdue) end.setDate(today.getDate() - 5);
 
-    const task = await prisma.task.create({
-      data: {
-        projectCode: pCode,
-        name: `Task ${taskCounter++} for ${pCode}`,
-        status: isCompleted ? 'Completed' : 'In Progress',
-        startDate: start,
-        deadline: end,
-      }
-    });
-
     // Assignees
     const assignees = [];
     if (i % 3 === 0) assignees.push('DES_A1');
@@ -135,15 +128,21 @@ async function main() {
     if (i % 5 === 0) assignees.push('DES_B1');
     if (assignees.length === 0) assignees.push('DES_B2');
 
-    for (const a of assignees) {
-      await prisma.taskAssignee.create({
-        data: {
-          taskId: task.taskId,
-          staffId: a,
-          isDone: isCompleted
+    const task = await prisma.task.create({
+      data: {
+        projectCode: pCode,
+        name: `Task ${taskCounter++} for ${pCode}`,
+        status: isCompleted ? 'Completed' : 'In Progress',
+        startDate: start,
+        deadline: end,
+        assignees: {
+          create: assignees.map(a => ({
+            staffId: a,
+            isDone: isCompleted
+          }))
         }
-      });
-    }
+      }
+    });
     tasksCreated.push(task);
 
     // Create a sub-task for 30% of tasks
@@ -158,13 +157,12 @@ async function main() {
           status: isCompleted ? 'Completed' : 'In Progress',
           startDate: start,
           deadline: subEnd,
-        }
-      });
-      await prisma.taskAssignee.create({
-        data: {
-          taskId: subTask.taskId,
-          staffId: assignees[0] || 'DES_B2',
-          isDone: isCompleted
+          assignees: {
+            create: {
+              staffId: assignees[0] || 'DES_B2',
+              isDone: isCompleted
+            }
+          }
         }
       });
       tasksCreated.push(subTask);
@@ -189,16 +187,15 @@ async function main() {
         status: 'In Progress',
         startDate: start,
         deadline: end,
+        assignees: {
+          create: {
+            staffId: i % 2 === 0 ? 'DES_A1' : 'CW_A1',
+            isDone: false
+          }
+        }
       }
     });
 
-    await prisma.taskAssignee.create({
-      data: {
-        taskId: task.taskId,
-        staffId: i % 2 === 0 ? 'DES_A1' : 'CW_A1',
-        isDone: false
-      }
-    });
     tasksCreated.push(task);
   }
 
@@ -270,6 +267,10 @@ async function main() {
         const logDate = new Date(d);
         const approvalStatus = (logDate.getTime() < today.getTime() - 86400000) ? 'Approved' : 'Pending';
         
+        const isApproved = approvalStatus === 'Approved' && hours > 0;
+        const costPerHour = 150000;
+        const amount = hours * costPerHour;
+
         const log = await prisma.timesheet.create({
           data: {
             staffId,
@@ -278,23 +279,17 @@ async function main() {
             logDate: logDate,
             logSource: d.getDate() % 2 === 0 ? 'Web' : 'Telegram',
             approvalStatus,
-            approvedById: approvalStatus === 'Approved' ? 'CPL_A' : null
+            approvedById: approvalStatus === 'Approved' ? 'CPL_A' : null,
+            internalCostTransaction: isApproved ? {
+              create: {
+                projectCode: task.projectCode,
+                encryptedHistoricalRate: encrypt(costPerHour.toString()),
+                encryptedAmount: encrypt(amount.toString()),
+                transactionDate: logDate
+              }
+            } : undefined
           }
         });
-
-        if (approvalStatus === 'Approved' && hours > 0) {
-          const costPerHour = 150000;
-          const amount = hours * costPerHour;
-          await prisma.internalCostTransaction.create({
-            data: {
-              projectCode: task.projectCode,
-              timesheetId: log.logId,
-              encryptedHistoricalRate: encrypt(costPerHour.toString()),
-              encryptedAmount: encrypt(amount.toString()),
-              transactionDate: logDate
-            }
-          });
-        }
     }
   }
 
@@ -316,14 +311,12 @@ async function main() {
         status: 'In Progress',
         startDate: pastWeek,
         deadline: today,
-      }
-    });
-
-    await prisma.taskAssignee.create({
-      data: {
-        taskId: task.taskId,
-        staffId: 'CPL_B',
-        isDone: false
+        assignees: {
+          create: {
+            staffId: 'CPL_B',
+            isDone: false
+          }
+        }
       }
     });
 
@@ -331,6 +324,9 @@ async function main() {
       const logD = new Date(today);
       logD.setDate(today.getDate() - d);
       if (logD.getDay() === 0 || logD.getDay() === 6) continue;
+      
+      const costPerHour = 300000;
+      const amount = (data.hours / 4) * costPerHour;
       
       const log = await prisma.timesheet.create({
         data: {
@@ -340,19 +336,15 @@ async function main() {
           logDate: logD,
           logSource: 'Web',
           approvalStatus: 'Approved',
-          approvedById: 'CD_01'
-        }
-      });
-      
-      const costPerHour = 300000;
-      const amount = (data.hours / 4) * costPerHour;
-      await prisma.internalCostTransaction.create({
-        data: {
-          projectCode: task.projectCode,
-          timesheetId: log.logId,
-          encryptedHistoricalRate: encrypt(costPerHour.toString()),
-          encryptedAmount: encrypt(amount.toString()),
-          transactionDate: logD
+          approvedById: 'CD_01',
+          internalCostTransaction: {
+            create: {
+              projectCode: task.projectCode,
+              encryptedHistoricalRate: encrypt(costPerHour.toString()),
+              encryptedAmount: encrypt(amount.toString()),
+              transactionDate: logD
+            }
+          }
         }
       });
     }
